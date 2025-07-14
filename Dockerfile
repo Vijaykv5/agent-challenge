@@ -1,38 +1,35 @@
-FROM ollama/ollama:0.7.0
+# Use official Node.js image for smaller, faster builds
+FROM node:20-slim
 
-# Qwen2.5:1.5b - Docker
-ENV API_BASE_URL=http://127.0.0.1:11434/api
-ENV MODEL_NAME_AT_ENDPOINT=qwen2.5:1.5b
-
-# Qwen2.5:32b = Docker
-# ENV API_BASE_URL=http://127.0.0.1:11434/api
-# ENV MODEL_NAME_AT_ENDPOINT=qwen2.5:32b
-
-# Install system dependencies and Node.js
+# Install system dependencies (curl for Ollama if needed, plus build tools for node-gyp)
 RUN apt-get update && apt-get install -y \
   curl \
-  && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-  && apt-get install -y nodejs \
-  && rm -rf /var/lib/apt/lists/* \
-  && npm install -g pnpm
+  python3 \
+  make \
+  g++ \
+  && rm -rf /var/lib/apt/lists/*
 
-# Create app directory
+# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY .env.docker package.json pnpm-lock.yaml ./
+# Copy package files first for better caching
+COPY package.json pnpm-lock.yaml ./
+
+# Install pnpm
+RUN npm install -g pnpm
 
 # Install dependencies
-RUN pnpm install
+# Use --frozen-lockfile for reproducible builds
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the application
 COPY . .
 
-# Build the project
-RUN pnpm run build
+# Expose the port Mastra uses
+EXPOSE 8080
 
-# Override the default entrypoint
-ENTRYPOINT ["/bin/sh", "-c"]
+# Build the project (if needed, but mastra dev/start auto-builds)
+# RUN pnpm run build
 
-# Start Ollama service and pull the model, then run the app
-CMD ["ollama serve & sleep 5 && ollama pull ${MODEL_NAME_AT_ENDPOINT} && node .mastra/output/index.mjs"]
+# Default command: start the Mastra agent
+CMD ["pnpm", "run", "dev"]

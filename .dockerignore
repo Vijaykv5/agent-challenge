@@ -34,8 +34,8 @@ Thumbs.db
 LICENSE
 
 # Docker
-Dockerfile
-.dockerignore
+# Dockerfile
+# .dockerignore
 
 # Temporary files
 *.tmp
