@@ -154,3 +154,78 @@ export async function fetchIssueDetails(
     return {};
   }
 }
+
+/**
+ * List all files in a GitHub repository using the Git Trees API
+ * @param repoUrl - GitHub repository URL
+ * @param branch - Branch name (default: 'main', fallback to 'master')
+ * @returns Array of { path: string, url: string }
+ */
+export async function listRepoFiles(repoUrl: string, branch?: string): Promise<Array<{ path: string; url: string }>> {
+  const { owner, repo } = parseGitHubUrl(repoUrl);
+  const githubToken = process.env.GITHUB_TOKEN;
+  let usedBranch = branch || 'main';
+
+  async function fetchTree(branchName: string) {
+    const refRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branchName}?recursive=1`, {
+      headers: githubToken ? {
+        Authorization: `Bearer ${githubToken}`,
+        Accept: 'application/vnd.github+json',
+      } : undefined,
+    });
+    if (refRes.ok) {
+      const data = await refRes.json();
+      if (data.tree && Array.isArray(data.tree)) {
+        return data.tree.filter((item: any) => item.type === 'blob').map((item: any) => ({
+          path: item.path,
+          url: `https://github.com/${owner}/${repo}/blob/${branchName}/${item.path}`
+        }));
+      }
+    }
+    return null;
+  }
+
+  // Try main, then master if main fails
+  let files = await fetchTree(usedBranch);
+  if (!files && !branch) {
+    files = await fetchTree('master');
+    usedBranch = 'master';
+  }
+  if (!files) throw new Error('Could not list files in the repository.');
+  return files;
+}
+
+/**
+ * Fetch the content of a file from a GitHub repository (raw content)
+ * @param repoUrl - GitHub repository URL
+ * @param filePath - Path to the file in the repo
+ * @param branch - Branch name (default: 'main', fallback to 'master')
+ * @param maxLines - Maximum number of lines to fetch (default: 50)
+ * @returns File content as a string (truncated if needed)
+ */
+export async function fetchFileContent(repoUrl: string, filePath: string, branch?: string, maxLines: number = 50): Promise<string> {
+  const { owner, repo } = parseGitHubUrl(repoUrl);
+  let usedBranch = branch || 'main';
+
+  async function fetchRaw(branchName: string) {
+    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branchName}/${filePath}`;
+    const res = await fetch(rawUrl);
+    if (res.ok) {
+      const text = await res.text();
+      if (maxLines > 0) {
+        return text.split('\n').slice(0, maxLines).join('\n');
+      }
+      return text;
+    }
+    return null;
+  }
+
+  // Try main, then master if main fails
+  let content = await fetchRaw(usedBranch);
+  if (!content && !branch) {
+    content = await fetchRaw('master');
+    usedBranch = 'master';
+  }
+  if (!content) throw new Error(`Could not fetch file content for ${filePath}`);
+  return content;
+}

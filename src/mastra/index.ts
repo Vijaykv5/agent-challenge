@@ -1,5 +1,6 @@
 import { Mastra } from "@mastra/core/mastra";
 import { PinoLogger } from "@mastra/loggers";
+import { UpstashStore } from "@mastra/upstash";
 import { repositoryIntelligenceAgent } from "./agents/repository-intelligence-agent/repository-intelligence-agent";
 import { repoAnalyzerWorkflow } from "./agents/repository-intelligence-agent/repository-analysis-workflow";
 
@@ -25,4 +26,8 @@ export const mastra = new Mastra({
     port: 8080,
     timeout: 10000,
   },
+  storage: new UpstashStore({
+    url: process.env.UPSTASH_REDIS_REST_URL || "redis://localhost:6379",
+    token: process.env.UPSTASH_REDIS_REST_TOKEN || "dummy-token",
+  }),
 });
