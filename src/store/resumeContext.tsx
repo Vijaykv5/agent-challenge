@@ -8,6 +8,7 @@ export interface CandidateViewModel {
   skills?: string[];
   total_experience?: string;
   education?: string;
+  email?: string;
 }
 
 interface ResumeContextType {

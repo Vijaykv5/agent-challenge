@@ -20,7 +20,7 @@ export interface WorkspaceBlock {
 export const AGENTS: Agent[] = [
   {
     id: "resume-parser",
-    name: "📄 Resume Parser",
+    name: "Resume Parser",
     emoji: "📄",
     description: "Extracts skills & experience from uploaded resumes",
     color: "green",
@@ -29,7 +29,7 @@ export const AGENTS: Agent[] = [
   },
   {
     id: "role-matcher",
-    name: "🧩 Role Matcher", 
+    name: "Role Matcher", 
     emoji: "🧩",
     description: "Matches resumes with provided job description",
     color: "blue",
@@ -38,7 +38,7 @@ export const AGENTS: Agent[] = [
   },
   {
     id: "assignment-scheduler",
-    name: "📅 Assignment Scheduler",
+    name: "Assignment Scheduler",
     emoji: "📅", 
     description: "Create task + deadline and preview emails to candidates",
     color: "purple",
