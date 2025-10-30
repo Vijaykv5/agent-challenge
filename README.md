@@ -117,7 +117,7 @@ OPENAI_API_KEY=your-key-here
 **Important Dates:**
 - Start Challenge: 10 October
 - Submission Deadline: 31 October
-- Winners Announced: 07 October
+- Winners Announced: 07 November
 
 ### Phase 1: Development
 
