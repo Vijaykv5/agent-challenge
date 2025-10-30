@@ -120,7 +120,7 @@ export default function MultiAgentStudio() {
     setBlocks(prev => prev.filter(block => block.id !== id));
   };
 
-  const activeAgent = activeId ? AGENTS.find(a => a.id === activeId) : null;
+  const activeAgent = activeId ? AGENTS.find(a => a.id === activeId) || null : null;
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark bg-gray-900' : 'bg-white'}`}>
@@ -142,8 +142,7 @@ export default function MultiAgentStudio() {
             <DroppableWorkspace 
               blocks={blocks}
               onUpdateBlock={updateBlock}
-              onDeleteBlock={deleteBlock}
-            >
+              onDeleteBlock={deleteBlock} children={undefined}            >
             </DroppableWorkspace>
           </div>
         </div>

@@ -2,8 +2,12 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { WorkspaceBlock as WorkspaceBlockType } from "@/types";
+import { useCallback, useState } from "react";
+import ResumeParserAgent from "@/components/agents/ResumeParserAgent";
+import RoleMatcherAgent from "@/components/agents/RoleMatcherAgent";
+import AssignmentSchedulerAgent from "@/components/agents/AssignmentSchedulerAgent";
 
 interface WorkspaceBlockProps {
   block: WorkspaceBlockType;
@@ -12,6 +16,8 @@ interface WorkspaceBlockProps {
 }
 
 export function WorkspaceBlock({ block, onUpdate, onDelete }: WorkspaceBlockProps) {
+  const [isRunning, setIsRunning] = useState(false);
+  const [candidates, setCandidates] = useState<any[] | null>(null);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: block.id,
     data: { type: 'workspace-block', block }
@@ -35,21 +41,39 @@ export function WorkspaceBlock({ block, onUpdate, onDelete }: WorkspaceBlockProp
     }
   };
 
-  const handleRun = () => {
-    let mockResult = "";
-    switch (block.agent.id) {
-      case "writer":
-        mockResult = "📝 Generated a compelling blog post about AI and creativity. The content includes engaging headlines, structured paragraphs, and a strong call-to-action.";
-        break;
-      case "editor":
-        mockResult = "✍️ Reviewed and refined the content. Improved grammar, enhanced readability, and optimized for SEO. Added transition sentences and improved flow.";
-        break;
-      case "designer":
-        mockResult = "🎨 Created visual mockups including color schemes, typography choices, and layout designs. Generated 3 different design variations for review.";
-        break;
+  const handleRun = async () => {
+    if (block.agent.id === 'resume-parser') return; // handled by ResumeParserAgent
+
+    if (!block.prompt.trim()) {
+      onUpdate(block.id, { result: "Please enter a prompt before running the agent." });
+      return;
     }
-    onUpdate(block.id, { result: mockResult });
+
+    setIsRunning(true);
+    try {
+      const response = await fetch('/api/mcp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          agentId: block.agent.id, 
+          prompt: block.prompt 
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to execute agent');
+      const formattedResult = `${block.agent.emoji} **${block.agent.name} Result:**\n\n${data.result}`;
+      onUpdate(block.id, { result: formattedResult });
+    } catch (error) {
+      onUpdate(block.id, { result: `❌ Error: ${error instanceof Error ? error.message : 'Failed to execute agent'}` });
+    } finally {
+      setIsRunning(false);
+    }
   };
+
+  const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {}, []);
+  const onDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {}, []);
 
   return (
     <motion.div
@@ -79,34 +103,115 @@ export function WorkspaceBlock({ block, onUpdate, onDelete }: WorkspaceBlockProp
         </button>
       </div>
       <div className="p-4 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Prompt
-          </label>
-          <textarea
-            value={block.prompt}
-            onChange={(e) => onUpdate(block.id, { prompt: e.target.value })}
-            placeholder="Enter your prompt here..."
-            className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            rows={3}
-          />
-        </div>
+        {block.agent.id === 'resume-parser' ? (
+          <>
+            <ResumeParserAgent
+              onRunComplete={(summary) => {
+                onUpdate(block.id, { result: summary });
+              }}
+            />
+            {block.result && !candidates && (
+              <div className="text-sm text-gray-600">{block.result}</div>
+            )}
+          </>
+        ) : block.agent.id === 'role-matcher' ? (
+          <>
+            <RoleMatcherAgent
+              onRunComplete={(summary) => {
+                onUpdate(block.id, { result: summary });
+              }}
+            />
+            {block.result && (
+              <div className="text-sm text-gray-600">{block.result}</div>
+            )}
+          </>
+        ) : block.agent.id === 'assignment-scheduler' ? (
+          <>
+            <AssignmentSchedulerAgent
+              onRunComplete={(summary) => {
+                onUpdate(block.id, { result: summary });
+              }}
+            />
+            {block.result && (
+              <div className="text-sm text-gray-600">{block.result}</div>
+            )}
+          </>
+        ) : (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Prompt
+              </label>
+              <textarea
+                value={block.prompt}
+                onChange={(e) => onUpdate(block.id, { prompt: e.target.value })}
+                placeholder="Enter your prompt here..."
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-400"
+                rows={3}
+              />
+            </div>
 
-        <button
-          onClick={handleRun}
-          className={`w-full py-2 px-4 rounded-lg font-medium text-white transition-colors ${getHeaderColor(block.agent.color)} hover:opacity-90`}
-        >
-          Run Agent
-        </button>
-        {block.result && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="bg-white p-3 rounded-lg border border-gray-200"
-          >
-            <h4 className="font-medium text-gray-700 mb-2">Result:</h4>
-            <p className="text-gray-600 text-sm">{block.result}</p>
-          </motion.div>
+            <button
+              onClick={handleRun}
+              disabled={isRunning}
+              className={`w-full py-2 px-4 rounded-lg font-medium text-white transition-colors ${getHeaderColor(block.agent.color)} hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+            >
+              {isRunning ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Running...
+                </>
+              ) : (
+                'Run Agent'
+              )}
+            </button>
+            {block.result && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="bg-white p-4 rounded-lg border border-gray-200 max-h-96 overflow-y-auto"
+              >
+                <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                  <span className="text-lg">{block.agent.emoji}</span>
+                  Result:
+                </h4>
+                <div className="text-gray-600 text-sm whitespace-pre-wrap leading-relaxed">
+                  {block.result.split('\n').map((line, index) => {
+                    const imageMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+                    if (imageMatch) {
+                      const [, alt, src] = imageMatch;
+                      return (
+                        <div key={index} className="my-4">
+                          <img 
+                            src={src} 
+                            alt={alt || 'Design Preview'} 
+                            className="w-full h-auto rounded-lg shadow-md border border-gray-200"
+                            style={{ maxHeight: '500px' }}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `
+                                  <div class="flex items-center justify-center h-48 bg-gray-100 rounded-lg border border-gray-200">
+                                    <div class="text-center">
+                                      <div class="text-4xl mb-2">🎨</div>
+                                      <div class="text-sm text-gray-600">Design Preview</div>
+                                    </div>
+                                  </div>
+                                `;
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    }
+                    return <div key={index}>{line}</div>;
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </>
         )}
       </div>
     </motion.div>

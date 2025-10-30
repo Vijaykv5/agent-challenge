@@ -45,7 +45,7 @@ export function DraggableAgentCard({ agent }: DraggableAgentCardProps) {
         <div className="text-2xl">{iconMap[agent.icon as keyof typeof iconMap]}</div>
         <div>
           <div className="font-semibold text-sm">{agent.name}</div>
-          <div className="text-xs opacity-90">{agent.emoji}</div>
+          <div className="text-xs opacity-90">{agent.description}</div>
         </div>
       </div>
     </motion.div>

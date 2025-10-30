@@ -23,12 +23,15 @@ export function DroppableWorkspace({
   });
 
   const showInitialBorder = blocks.length === 0;
+  const requiredIds = ["resume-parser", "role-matcher", "ranking-agent"];
+  const presentIds = new Set(blocks.map((b) => (b.agentId ?? b.agent?.id)) as string[]);
+  const allModulesPresent = requiredIds.every((id) => presentIds.has(id));
 
   return (
     <div
       id="workspace"
       ref={setNodeRef}
-      className="min-h-full bg-white relative"
+      className="min-h-full bg-[#F9FAFB] relative"
     >
       {showInitialBorder && (
         <div className="absolute inset-4 pointer-events-none border-2 border-dashed border-gray-300 rounded-lg" />
@@ -57,18 +60,31 @@ export function DroppableWorkspace({
 
         {blocks.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center text-gray-500 dark:text-gray-400">
+            <div className="text-center text-gray-600">
               <div className="text-6xl mb-4">🎯</div>
-              <h3 className="text-xl font-medium mb-2">Welcome to Multi-Agent Studio</h3>
-              <p>Drag agents from the sidebar to start creating content</p>
+              <h3 className="text-xl font-medium mb-2">🎯 Welcome to HireMind — Your AI-powered recruiter assistant.</h3>
+              <p>Upload resumes and a job description to find your top candidates.</p>
               <div className="mt-4 text-sm">
-                <p>💡 Try dragging the Writer, Editor, or Designer agents!</p>
+                <p>💡 Try dragging the Resume Parser, Role Matcher, and Ranking Agent to create your recruitment flow.</p>
               </div>
             </div>
           </div>
         )}
 
         {children}
+
+        {/* <div className="pointer-events-auto absolute bottom-6 right-6">
+          <button
+            disabled={!allModulesPresent}
+            className={`px-4 py-2 rounded-lg shadow text-white transition-colors ${
+              allModulesPresent
+                ? 'bg-[#2563EB] hover:bg-[#1D4ED8]'
+                : 'bg-gray-300 cursor-not-allowed'
+            }`}
+          >
+            🚀 Run HireMind Pipeline
+          </button>
+        </div> */}
       </div>
     </div>
   );

@@ -12,9 +12,10 @@ export function Navbar({ isDarkMode, onToggleDarkMode }: NavbarProps) {
     <nav className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex-1 flex justify-center">
+          <div className="flex-1 flex justify-center items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#0F172A] flex items-center justify-center text-white font-bold">H</div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Multi-Agent Studio
+              HireMind
             </h1>
           </div>
           <button

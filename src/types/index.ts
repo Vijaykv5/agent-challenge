@@ -2,9 +2,10 @@ export interface Agent {
   id: string;
   name: string;
   emoji: string;
+  description: string;
   color: string;
   gradient: string;
-  icon: React.ReactNode;
+  icon: string;
 }
 
 export interface WorkspaceBlock {
@@ -18,27 +19,30 @@ export interface WorkspaceBlock {
 
 export const AGENTS: Agent[] = [
   {
-    id: "writer",
-    name: "Writer Agent",
-    emoji: "📝",
-    color: "yellow",
-    gradient: "from-yellow-400 to-yellow-500",
+    id: "resume-parser",
+    name: "📄 Resume Parser",
+    emoji: "📄",
+    description: "Extracts skills & experience from uploaded resumes",
+    color: "green",
+    gradient: "from-[#10B981] to-[#10B981]",
     icon: "PenTool"
   },
   {
-    id: "editor",
-    name: "Editor Agent", 
-    emoji: "✍️",
-    color: "green",
-    gradient: "from-green-400 to-green-500",
+    id: "role-matcher",
+    name: "🧩 Role Matcher", 
+    emoji: "🧩",
+    description: "Matches resumes with provided job description",
+    color: "blue",
+    gradient: "from-[#2563EB] to-[#2563EB]",
     icon: "Edit3"
   },
   {
-    id: "designer",
-    name: "Designer Agent",
-    emoji: "🎨", 
-    color: "blue",
-    gradient: "from-blue-400 to-blue-500",
+    id: "assignment-scheduler",
+    name: "📅 Assignment Scheduler",
+    emoji: "📅", 
+    description: "Create task + deadline and preview emails to candidates",
+    color: "purple",
+    gradient: "from-[#7C3AED] to-[#7C3AED]",
     icon: "Palette"
   }
 ];
