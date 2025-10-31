@@ -50,7 +50,7 @@ COPY --from=deps /pnpm /pnpm
 COPY package.json pnpm-lock.yaml ./
 
 # Copy config and source files
-COPY next.config.ts tsconfig.json postcss.config.mjs eslint.config.mjs ./
+COPY next.config.mjs tsconfig.json postcss.config.mjs eslint.config.mjs ./
 COPY src ./src
 COPY public ./public
 
@@ -58,24 +58,14 @@ COPY public ./public
 RUN pnpm run build && pnpm prune --prod
 
 
-# -------------------- Runtime Stage --------------------
-FROM node:lts AS runtime
+# -------------------- Runtime Stage (reuse build image) --------------------
+FROM build AS runtime
 
 # Create non-root user
 RUN groupadd -g 1001 appgroup && \
   useradd -u 1001 -g appgroup -m -d /app -s /bin/false appuser
 
 WORKDIR /app
-
-# Copy production node_modules produced in build stage
-COPY --from=build --chown=appuser:appgroup /app/node_modules ./node_modules
-COPY --from=build --chown=appuser:appgroup /app/package.json ./package.json
-
-# Copy only what’s needed to run
-COPY --from=build --chown=appuser:appgroup /app/.next ./.next
-COPY --from=build --chown=appuser:appgroup /app/.mastra ./.mastra
-COPY --from=build --chown=appuser:appgroup /app/public ./public
-COPY --from=build --chown=appuser:appgroup /app/next.config.ts ./next.config.ts
 
 ENV NODE_ENV=production \
   NODE_OPTIONS="--enable-source-maps"

@@ -22,3 +22,4 @@ export function getParsedCandidates(): Candidate[] {
 }
 
 
+
