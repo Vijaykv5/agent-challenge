@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Loader2, Upload, CheckCircle2, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { parseResumes } from "@/app/actions/parseResumes";
+import { parseResumes } from "@/app/api/actions/parseResumes";
 import { useResumeContext, type CandidateViewModel } from "@/store/resumeContext";
 
 interface ResumeParserAgentProps {

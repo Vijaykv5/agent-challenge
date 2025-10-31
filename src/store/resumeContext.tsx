@@ -15,16 +15,19 @@ interface ResumeContextType {
   candidates: CandidateViewModel[];
   setCandidates: (candidates: CandidateViewModel[]) => void;
   clearCandidates: () => void;
+  position: string;
+  setPosition: (position: string) => void;
 }
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
 export function ResumeProvider({ children }: { children: ReactNode }) {
   const [candidates, setCandidates] = useState<CandidateViewModel[]>([]);
+  const [position, setPosition] = useState<string>("");
   const clearCandidates = () => setCandidates([]);
 
   return (
-    <ResumeContext.Provider value={{ candidates, setCandidates, clearCandidates }}>
+    <ResumeContext.Provider value={{ candidates, setCandidates, clearCandidates, position, setPosition }}>
       {children}
     </ResumeContext.Provider>
   );

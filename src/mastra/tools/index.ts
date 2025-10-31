@@ -2,6 +2,7 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { run as runResumeParser, CandidateSchema, ResumeFileSchema } from './resume-parser';
 import { run as runRoleMatcher, MatchResultSchema } from './role-matcher';
+import { run as runAssignmentGenerator, AssignmentOutputSchema } from './assignment-generator';
 
 interface GeocodingResponse {
   results: {
@@ -589,6 +590,21 @@ export const roleMatcherTool = createTool({
   execute: async ({ context }) => {
     const { jobDescription } = context as { jobDescription: string };
     return await runRoleMatcher(jobDescription);
+  },
+});
+
+// Assignment Generator Tool (dynamic LLM-backed)
+export const assignmentGeneratorTool = createTool({
+  id: 'assignment-generator',
+  description: 'Generate a role-appropriate assignment email (subject + body) from a description and optional role',
+  inputSchema: z.object({
+    description: z.string().describe('Freeform description of what to assess'),
+    role: z.string().optional().describe('Candidate role if known'),
+  }),
+  outputSchema: AssignmentOutputSchema,
+  execute: async ({ context }) => {
+    const { description, role } = context as { description: string; role?: string };
+    return await runAssignmentGenerator(description, role);
   },
 });
 

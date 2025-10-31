@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
-import { matchRoles } from "@/app/actions/matchRoles";
+import { matchRoles } from "@/app/api/actions/matchRoles";
 import { useResumeContext, type CandidateViewModel } from "@/store/resumeContext";
 import type { MatchResult } from "@/mastra/store/roleMatcherStore";
 
@@ -12,7 +12,7 @@ interface RoleMatcherAgentProps {
 }
 
 export default function RoleMatcherAgent({ onRunComplete }: RoleMatcherAgentProps) {
-  const { candidates } = useResumeContext();
+  const { candidates, setPosition } = useResumeContext();
   const [isRunning, setIsRunning] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [matchResults, setMatchResults] = useState<MatchResult[] | null>(null);
@@ -37,6 +37,8 @@ export default function RoleMatcherAgent({ onRunComplete }: RoleMatcherAgentProp
     setMatchResults(null);
     
     try {
+      // Persist the intended position/role from the job description for downstream agents
+      setPosition(jobDescription.trim());
       // Simulate 2–3s latency for UX consistency
       const delay = new Promise((r) => setTimeout(r, 2000 + Math.floor(Math.random() * 1000)));
       const [data] = await Promise.all([
