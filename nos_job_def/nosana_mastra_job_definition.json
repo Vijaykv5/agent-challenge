@@ -8,7 +8,7 @@
     {
       "id": "agents",
       "args": {
-        "image": "vijay555/agent-challenge-002:v0.1.2",
+        "image": "vijay555/agent-challenge-002:v0.1.4",
         "expose": 3000,
         "env": {
           "NOS_OLLAMA_API_URL": "http://%%ops.ollama.host%%:11434/api",
