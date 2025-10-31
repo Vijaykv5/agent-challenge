@@ -135,6 +135,11 @@ docker login
 docker push yourname/hiremind:latest
 ```
 
+### Public Links
+
+- **Docker Image**: `https://hub.docker.com/repository/docker/vijay555/agent-challenge-002`
+- **Nosana Deployed URL**: `https://dashboard.nosana.com/jobs/AnNHPza814oW1pWvA2fGmiBWbQnd2bdXEx3PPKrH4fUN`
+
 ### Deploy to Nosana
 
 Using the dashboard:
